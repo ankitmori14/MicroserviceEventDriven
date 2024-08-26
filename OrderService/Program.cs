@@ -1,8 +1,17 @@
 using Npgsql;
+using OrderService.Filters;
 using OrderService.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddMvc(
+    config =>
+    {
+        config.Filters.Add(typeof(ExceptionHandler));
+    }
+ );
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

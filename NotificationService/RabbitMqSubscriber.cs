@@ -25,44 +25,51 @@ namespace NotificationService
         /// <returns></returns>
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var factory = new ConnectionFactory();
-            Uri uri = new Uri("");
-            factory.Ssl.Enabled = true;
-            factory.Uri = uri;
-            factory.UserName = "";
-            factory.Password = "";
-
-            var connection = factory.CreateConnection();
-            var channel = connection.CreateModel();
-
-            string routingKey = _routingKey;
-
-            var exchangeNameTopic = _exchangeName;
-
-            var queueName = _queueName;
-            channel.QueueDeclare(queueName, true, false, false, null);
-            channel.QueueBind(queueName, exchangeNameTopic, routingKey);
-
-
-            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-
-            var consumer = new EventingBasicConsumer(channel);
-            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
-
-            consumer.Received += async (model, ea) =>
+            try
             {
-                var body = ea.Body.ToArray();
+                var factory = new ConnectionFactory();
+                Uri uri = new Uri("");
+                factory.Ssl.Enabled = true;
+                factory.Uri = uri;
+                factory.UserName = "";
+                factory.Password = "";
+
+                var connection = factory.CreateConnection();
+                var channel = connection.CreateModel();
+
+                string routingKey = _routingKey;
+
+                var exchangeNameTopic = _exchangeName;
+
+                var queueName = _queueName;
+                channel.QueueDeclare(queueName, true, false, false, null);
+                channel.QueueBind(queueName, exchangeNameTopic, routingKey);
 
 
-                using (var reader = new BsonDataReader(new MemoryStream(body)))
+                channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+
+                var consumer = new EventingBasicConsumer(channel);
+                channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+
+                consumer.Received += async (model, ea) =>
                 {
-                    var serializer = new JsonSerializer();
-                    var evt = serializer.Deserialize<T>(reader);
-                    SendEmailNotification sendEmailNotification = new SendEmailNotification();
-                    sendEmailNotification.SendEmail(evt);
-                }
+                    var body = ea.Body.ToArray();
 
-            };
+
+                    using (var reader = new BsonDataReader(new MemoryStream(body)))
+                    {
+                        var serializer = new JsonSerializer();
+                        var evt = serializer.Deserialize<T>(reader);
+                        SendEmailNotification sendEmailNotification = new SendEmailNotification();
+                        sendEmailNotification.SendEmail(evt);
+                    }
+
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to Subscribe event to message broker");
+            }
             return Task.CompletedTask;
         }
 

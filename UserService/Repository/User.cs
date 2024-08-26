@@ -16,6 +16,7 @@ namespace UserService.Repository
         /// <returns></returns>
         public async Task<List<UserDetails>> GetAll()
         {
+         
             var userDetails = new List<UserDetails>();
             using var cmd = connection.CreateCommand();
             cmd.CommandText = "SELECT id, firstname, lastname, address FROM userorderdetails.users;";
