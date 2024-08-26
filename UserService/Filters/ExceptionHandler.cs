@@ -34,11 +34,11 @@ namespace UserService.Filters
             cpResponse.Message = actionExecutedContext.Exception.Message;
             try
             {
-                //SerilogManager.Error(actionExecutedContext.Exception.Message, actionExecutedContext.Exception);
+                /// We can add logger here to log message
             }
             catch (Exception ex)
             {
-                //SerilogManager.Error(ex.Message, ex);
+                /// We and add logic or logger to log messager as per our need.
             }
             finally
             {
